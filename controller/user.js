@@ -43,7 +43,7 @@ const updateUser = async (req, res) => {
     res.send(user);
   } catch {
     res.status(404);
-    res.send({ error: "Post doesn't exist!" });
+    res.send({ error: "Users doesn't exist!" });
   }
 };
 
