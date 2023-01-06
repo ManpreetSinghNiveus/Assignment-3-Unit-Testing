@@ -1,6 +1,6 @@
 require("dotenv").config();
 const express = require("express");
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT;
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const dbConfig = require("./config/db.config");
@@ -20,12 +20,12 @@ mongoose
     useNewUrlParser: true,
   })
   .then(() => {
-    // logger.info("Database Connected Successfully");
-    console.log("Database Connected Successfully");
+    logger.info("Database Connected Successfully");
+    // console.log("Database Connected Successfully");
   })
   .catch((err) => {
-    // logger.error("Could not connect to the database", err);
-    console.log("Could not connect to the database", err);
+    logger.error("Could not connect to the database", err);
+    // console.log("Could not connect to the database", err);
   });
 
 app.listen(PORT, () => {

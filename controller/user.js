@@ -38,7 +38,7 @@ const createUser = async (req, res) => {
       });
     }
   } catch (error) {
-    // logger.error(messageFormat(req.method, error, req.originalUrl));
+    logger.error(messageFormat(req.method, error, req.originalUrl));
     res.status(400).send("Something went wrong");
   }
 };
