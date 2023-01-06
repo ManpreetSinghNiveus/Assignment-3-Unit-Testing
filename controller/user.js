@@ -1,6 +1,7 @@
 const Joi = require("joi");
 const bcrypt = require("bcrypt");
 const User = require("../models/user");
+const { logger, messageFormat } = require("../logger/index");
 
 const createUser = async (req, res) => {
   try {
@@ -11,39 +12,57 @@ const createUser = async (req, res) => {
     });
     const { error } = schema.validate(req.body);
     if (error) {
-      return res.status(400).send(error.details[0].message);
+      let errorMessage = error.details[0].message;
+      logger.error(messageFormat(req.method, errorMessage, req.originalUrl));
+      return res.status(400).send(errorMessage);
     }
     let user = await User.findOne({ email: req.body.email });
     if (user) {
-      return res.status(400).send("Email Already Exists!");
+      logger.error(
+        messageFormat(req.method, "Email Already Exists", req.originalUrl)
+      );
+      return res.status(400).send("Email Already Exists");
     } else {
       // Insert the new user if they do not exist yet
-      user = new Use({
+      user = new User({
         name: req.body.name,
         email: req.body.email,
         password: req.body.password,
       });
-      console.log("user :>> ", user);
       const salt = await bcrypt.genSalt(10);
       user.password = await bcrypt.hash(user.password, salt);
       await user.save();
-      res.status(200).json({
+      logger.info(messageFormat(req.method, "User Created", req.originalUrl));
+      res.status(201).json({
         data: user,
       });
     }
   } catch (error) {
-    res.status(404);
-    res.send({ error: error });
+    // logger.error(messageFormat(req.method, error, req.originalUrl));
+    res.status(400).send("Something went wrong");
   }
 };
 
 const updateUser = async (req, res) => {
   try {
-    const user = await User.findOne({ _id: req.params.id });
-    res.send(user);
-  } catch {
-    res.status(404);
-    res.send({ error: "Users doesn't exist!" });
+    const id = req.params.id;
+    const update = req.body;
+    User.findOneAndUpdate(
+      { _id: id },
+      update,
+      { new: true },
+      (error, result) => {
+        if (error) {
+          logger.error(messageFormat(req.method, error, req.originalUrl));
+          return res.status(500).send(error);
+        }
+        logger.info(messageFormat(req.method, "User Updated", req.originalUrl));
+        res.status(204).send(result);
+      }
+    );
+  } catch (error) {
+    logger.error(messageFormat(req.method, error, req.originalUrl));
+    res.status(400).send("Something went wrong");
   }
 };
 
@@ -51,14 +70,17 @@ const getUsers = async (req, res) => {
   try {
     const users = await User.find({});
     if (users.length) {
-      res.send(users);
+      logger.info(messageFormat(req.method, "Users Fetched", req.originalUrl));
+      res.status(200).send(users);
     } else {
-      res.status(404);
-      res.send({ error: "Users doesn't exist!" });
+      logger.info(
+        messageFormat(req.method, "Users doesn't exist", req.originalUrl)
+      );
+      res.status(404).send({ error: "Users doesn't exist" });
     }
   } catch (error) {
-    res.status(400);
-    res.send({ error: error });
+    logger.error(messageFormat(req.method, error, req.originalUrl));
+    res.status(400).send("Something went wrong");
   }
 };
 
