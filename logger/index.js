@@ -1,17 +1,28 @@
-const developmentLogger = require("./developmentLogger");
-const productionLogger = require("./productionLogger");
-let logger = null;
+const { createLogger, format, transports } = require("winston");
+const { combine, timestamp, printf } = format;
 
 let messageFormat = (method, message, apiUrl) => {
   return `${message} [${apiUrl}] [${method}]`;
 };
 
-if (process.env.NODE_ENV == "development") {
-  logger = developmentLogger();
-}
+const myFormat = printf(({ level, message, timestamp }) => {
+  return `${timestamp} [${level}] [${message}]`;
+});
 
-if (process.env.NODE_ENV == "production") {
-  logger = productionLogger();
-}
+const logger = createLogger({
+  level: "debug",
+  format: combine(
+    format.colorize(),
+    timestamp({
+      format: "MMM-DD-YYYY HH:mm:ss",
+    }),
+    myFormat
+  ),
+  transports: [
+    new transports.Console({
+      format: format.simple(),
+    }),
+  ],
+});
 
 module.exports = { logger, messageFormat };

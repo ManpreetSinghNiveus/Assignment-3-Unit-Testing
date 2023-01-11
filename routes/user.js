@@ -7,4 +7,6 @@ userRouter.put("/update-user/:id", userController.updateUser);
 
 userRouter.get("/get-users", userController.getUsers);
 
+userRouter.delete("/delete-user/:id", userController.deleteUser);
+
 module.exports = userRouter;

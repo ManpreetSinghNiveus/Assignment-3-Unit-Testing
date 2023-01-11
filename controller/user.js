@@ -33,9 +33,7 @@ const createUser = async (req, res) => {
       user.password = await bcrypt.hash(user.password, salt);
       await user.save();
       logger.info(messageFormat(req.method, "User Created", req.originalUrl));
-      res.status(201).json({
-        data: user,
-      });
+      res.status(201).json(user);
     }
   } catch (error) {
     logger.error(messageFormat(req.method, error, req.originalUrl));
@@ -57,7 +55,7 @@ const updateUser = async (req, res) => {
           return res.status(500).send(error);
         }
         logger.info(messageFormat(req.method, "User Updated", req.originalUrl));
-        res.status(204).send(result);
+        res.status(200).send(result);
       }
     );
   } catch (error) {
@@ -84,8 +82,26 @@ const getUsers = async (req, res) => {
   }
 };
 
+const deleteUser = async (req, res) => {
+  try {
+    const id = req.params.id;
+    User.findOneAndRemove({ _id: id }, (error) => {
+      if (error) {
+        logger.error(messageFormat(req.method, error, req.originalUrl));
+        return res.status(500).send(error);
+      }
+      logger.info(messageFormat(req.method, "User Deleted", req.originalUrl));
+      res.status(200).send({});
+    });
+  } catch (error) {
+    logger.error(messageFormat(req.method, error, req.originalUrl));
+    res.status(400).send("Something went wrong");
+  }
+};
+
 module.exports = {
   createUser,
   updateUser,
   getUsers,
+  deleteUser,
 };
